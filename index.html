@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Javanese:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Javanese:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
         /* Import Font Lokal */
@@ -487,11 +487,19 @@
         }
 
         .card-meta {
-            font-size: 0.8rem;
-            color: var(--text-muted);
             display: flex;
             flex-direction: column;
             gap: 2px;
+        }
+
+        /* Label Teks Latin Kartu Grid: Noto Sans, Ukuran diperkecil 30% (~0.7rem) */
+        .card-meta-label {
+            font-family: 'Noto Sans', sans-serif !important;
+            font-size: 0.7rem !important;
+            font-weight: 600;
+            color: var(--text-muted);
+            line-height: 1.2;
+            text-transform: none;
         }
 
         .card-meta span {
@@ -934,12 +942,30 @@
                     </div>
                     <div class="card-body">
                         <div class="card-aksara-main col-sriwedari" onclick="copyText('${item.kbj}')" title="Klik untuk salin">${item.kbj}</div>
-                        <div class="card-meta col-sriwedari">Sriwedari/KBJ: <span>${formatVal(item.kbj)}</span></div>
-                        <div class="card-meta col-simplified">Simplified: <span>${formatVal(item.simp)}</span></div>
-                        <div class="card-meta col-tradisional">Tradisional: <span>${formatVal(item.trad)}</span></div>
-                        <div class="card-meta col-kawi">Cara Kawi (Mardi Kawi): <span>${formatVal(item.mk)}</span></div>
-                        <div class="card-meta col-jgst">JGST: <span>${item.jgst}</span></div>
-                        <div class="card-meta col-ipa">IPA: <span>${item.ipa}</span></div>
+                        <div class="card-meta">
+                            <span class="card-meta-label">Sriwedari/KBJ:</span>
+                            <span class="col-sriwedari">${formatVal(item.kbj)}</span>
+                        </div>
+                        <div class="card-meta">
+                            <span class="card-meta-label">Simplified:</span>
+                            <span class="col-simplified">${formatVal(item.simp)}</span>
+                        </div>
+                        <div class="card-meta">
+                            <span class="card-meta-label">Tradisional:</span>
+                            <span class="col-tradisional">${formatVal(item.trad)}</span>
+                        </div>
+                        <div class="card-meta">
+                            <span class="card-meta-label">Cara Kawi (Mardi Kawi):</span>
+                            <span class="col-kawi">${formatVal(item.mk)}</span>
+                        </div>
+                        <div class="card-meta">
+                            <span class="card-meta-label">JGST:</span>
+                            <span class="col-jgst">${item.jgst}</span>
+                        </div>
+                        <div class="card-meta">
+                            <span class="card-meta-label">IPA:</span>
+                            <span class="col-ipa">${item.ipa}</span>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
