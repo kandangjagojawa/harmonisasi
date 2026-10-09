@@ -355,9 +355,9 @@
             opacity: 0.5;
         }
 
-        /* Font Styling per Column */
-        .font-default tbody .col-sriwedari, 
-        .font-default tbody .col-simplified { 
+        /* Font Styling per Column - General Rules for Table and Grid Card */
+        .font-default .col-sriwedari, 
+        .font-default .col-simplified { 
             font-family: 'NgayogyanN', 'Noto Sans Javanese', sans-serif; 
             font-size: 1.6rem; 
             color: var(--aksara-color); 
@@ -365,8 +365,8 @@
             cursor: pointer;
         }
 
-        .font-default tbody .col-kawi, 
-        .font-default tbody .col-tradisional { 
+        .font-default .col-kawi, 
+        .font-default .col-tradisional { 
             font-family: 'Ngayogyan', 'Noto Sans Javanese', sans-serif; 
             font-size: 1.6rem; 
             color: var(--aksara-color); 
@@ -374,13 +374,13 @@
             cursor: pointer;
         }
 
-        tbody .col-ipa { 
+        .col-ipa { 
             font-family: 'Charis', sans-serif; 
             font-size: 1.25rem; 
             color: var(--text-main);
         }
 
-        tbody .col-jgst { 
+        .col-jgst { 
             font-family: 'Gentium', serif; 
             color: var(--accent); 
             font-weight: 700; 
@@ -388,21 +388,17 @@
         }
 
         /* Font Noto Mode */
-        .font-noto tbody .col-sriwedari, 
-        .font-noto tbody .col-simplified, 
-        .font-noto tbody .col-kawi, 
-        .font-noto tbody .col-tradisional, 
-        .font-noto tbody .col-ipa, 
-        .font-noto tbody .col-jgst { 
-            font-family: 'Noto Sans Javanese', sans-serif; 
-        }
-
-        .font-noto tbody .col-sriwedari, 
-        .font-noto tbody .col-simplified, 
-        .font-noto tbody .col-kawi, 
-        .font-noto tbody .col-tradisional { 
+        .font-noto .col-sriwedari, 
+        .font-noto .col-simplified, 
+        .font-noto .col-kawi, 
+        .font-noto .col-tradisional, 
+        .font-noto .col-ipa, 
+        .font-noto .col-jgst { 
+            font-family: 'Noto Sans Javanese', sans-serif !important; 
             font-size: 1.5rem; 
             color: var(--aksara-color); 
+            line-height: 1.4;
+            cursor: pointer;
         }
 
         /* Class Sembunyi Kolom */
@@ -481,7 +477,7 @@
         }
 
         .card-aksara-main {
-            font-size: 2.2rem;
+            font-size: 2.2rem !important;
             color: var(--aksara-color);
             text-align: center;
             grid-column: span 2;
@@ -496,13 +492,13 @@
         }
 
         .card-meta span {
-            display: block;
+            display: inline-block;
             color: var(--text-main);
             font-weight: 600;
         }
     </style>
 </head>
-<body>
+<body class="font-default">
 
     <div class="container">
         <!-- Header -->
@@ -575,11 +571,11 @@
                     </select>
                 </div>
 
-                <!-- Font Mode -->
+                <!-- Font Mode Dropdown -->
                 <div class="control-group">
                     <label for="fontSelect">Font Mode:</label>
                     <select id="fontSelect" onchange="updateFontMode()">
-                        <option value="font-default">Font Default (Ngayogyan/Charis/Gentium)</option>
+                        <option value="font-default">Font Default</option>
                         <option value="font-noto">Noto Sans Javanese</option>
                     </select>
                 </div>
@@ -607,8 +603,8 @@
         </div>
 
         <!-- Main Display Container (Table View) -->
-        <div id="tableViewWrapper" class="table-wrapper">
-            <table id="mappingTable" class="font-default">
+        <div id="tableViewWrapper" class="table-wrapper" style="display: none;">
+            <table id="mappingTable">
                 <thead>
                     <tr>
                         <th class="col-latin">Input Latin</th>
@@ -627,8 +623,8 @@
             </table>
         </div>
 
-        <!-- Alternative Display Container (Grid Card View) -->
-        <div id="gridViewWrapper" class="grid-container" style="display: none;">
+        <!-- Alternative Display Container (Grid Card View - DEFAULT) -->
+        <div id="gridViewWrapper" class="grid-container">
             <!-- Content dynamic grid cards -->
         </div>
     </div>
@@ -722,7 +718,7 @@
             { cat: 'Swara', id: 'LEE_S', lat: 'LEE', kbj: '-', simp: 'ꦋ', mk: 'ꦋ', trad: 'ꦋ', uni: 'U+A98B', ipa: '/ləː/', jgst: 'ḷö', hana: 48.1, warga: 48.1 }
         ];
 
-        let currentLayoutView = 'table';
+        let currentLayoutView = 'grid';
 
         function formatVal(val) {
             return val === '-' ? '<span class="dash">-</span>' : `<span onclick="copyText('${val}')" title="Klik untuk salin">${val}</span>`;
@@ -762,8 +758,7 @@
 
         function updateFontMode() {
             const fontMode = document.getElementById('fontSelect').value;
-            const table = document.getElementById('mappingTable');
-            table.className = fontMode;
+            document.body.className = fontMode;
         }
 
         function updateDiacriticsSize(size) {
@@ -934,20 +929,20 @@
                         <span class="code" onclick="copyText('${item.uni}')">${item.uni}</span>
                     </div>
                     <div class="card-body">
-                        <div class="card-aksara-main" onclick="copyText('${item.kbj}')" title="Klik untuk salin">${item.kbj}</div>
-                        <div class="card-meta">Sriwedari: <span>${item.kbj}</span></div>
-                        <div class="card-meta">Simplified: <span>${item.simp}</span></div>
-                        <div class="card-meta">Cara Kawi: <span>${item.mk}</span></div>
-                        <div class="card-meta">IPA: <span>${item.ipa}</span></div>
+                        <div class="card-aksara-main col-sriwedari" onclick="copyText('${item.kbj}')" title="Klik untuk salin">${item.kbj}</div>
+                        <div class="card-meta">Sriwedari: <span class="col-sriwedari">${item.kbj}</span></div>
+                        <div class="card-meta">Simplified: <span class="col-simplified">${item.simp}</span></div>
+                        <div class="card-meta">Cara Kawi: <span class="col-kawi">${item.mk}</span></div>
+                        <div class="card-meta">IPA: <span class="col-ipa">${item.ipa}</span></div>
                     </div>
                 `;
                 container.appendChild(card);
             });
+            updateDiacriticsSize(document.getElementById('diacriticsSize').value);
         }
 
         // Initial Initialization
-        document.getElementById('btnTableView').classList.add('btn-primary');
-        renderData();
+        toggleLayoutView('grid');
     </script>
 </body>
 </html>
