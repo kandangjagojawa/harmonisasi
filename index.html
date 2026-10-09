@@ -376,7 +376,7 @@
 
         .col-ipa { 
             font-family: 'Charis', sans-serif; 
-            font-size: 1.25rem; 
+            font-size: 1.15rem; 
             color: var(--text-main);
         }
 
@@ -384,7 +384,7 @@
             font-family: 'Gentium', serif; 
             color: var(--accent); 
             font-weight: 700; 
-            font-size: 1.25rem; 
+            font-size: 1.15rem; 
         }
 
         /* Font Noto Mode */
@@ -395,7 +395,7 @@
         .font-noto .col-ipa, 
         .font-noto .col-jgst { 
             font-family: 'Noto Sans Javanese', sans-serif !important; 
-            font-size: 1.5rem; 
+            font-size: 1.4rem; 
             color: var(--aksara-color); 
             line-height: 1.4;
             cursor: pointer;
@@ -433,7 +433,7 @@
         /* Grid View Mode */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 16px;
             padding: 4px;
         }
@@ -473,7 +473,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            align-items: center;
+            align-items: start;
         }
 
         .card-aksara-main {
@@ -489,12 +489,16 @@
         .card-meta {
             font-size: 0.8rem;
             color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
 
         .card-meta span {
             display: inline-block;
             color: var(--text-main);
             font-weight: 600;
+            word-break: break-word;
         }
     </style>
 </head>
@@ -559,14 +563,14 @@
             </div>
 
             <div class="controls-row">
-                <!-- Urutan Sort -->
+                <!-- Urutan Sort (Default: Warga Aksara Kawi) -->
                 <div class="control-group">
                     <label for="sortOrder">Urutan:</label>
                     <select id="sortOrder" onchange="renderData()">
+                        <option value="kawi" selected>Warga Aksara (Kawi)</option>
                         <option value="kategori">Berdasarkan Kategori</option>
                         <option value="alphabet">Alfabet Latin (A-Z)</option>
                         <option value="hanacaraka">Urutan Hanacaraka</option>
-                        <option value="kawi">Warga Aksara (Kawi)</option>
                         <option value="unicode">Kode Unicode</option>
                     </select>
                 </div>
@@ -930,10 +934,12 @@
                     </div>
                     <div class="card-body">
                         <div class="card-aksara-main col-sriwedari" onclick="copyText('${item.kbj}')" title="Klik untuk salin">${item.kbj}</div>
-                        <div class="card-meta">Sriwedari: <span class="col-sriwedari">${item.kbj}</span></div>
-                        <div class="card-meta">Simplified: <span class="col-simplified">${item.simp}</span></div>
-                        <div class="card-meta">Cara Kawi: <span class="col-kawi">${item.mk}</span></div>
-                        <div class="card-meta">IPA: <span class="col-ipa">${item.ipa}</span></div>
+                        <div class="card-meta col-sriwedari">Sriwedari/KBJ: <span>${formatVal(item.kbj)}</span></div>
+                        <div class="card-meta col-simplified">Simplified: <span>${formatVal(item.simp)}</span></div>
+                        <div class="card-meta col-tradisional">Tradisional: <span>${formatVal(item.trad)}</span></div>
+                        <div class="card-meta col-kawi">Cara Kawi (Mardi Kawi): <span>${formatVal(item.mk)}</span></div>
+                        <div class="card-meta col-jgst">JGST: <span>${item.jgst}</span></div>
+                        <div class="card-meta col-ipa">IPA: <span>${item.ipa}</span></div>
                     </div>
                 `;
                 container.appendChild(card);
