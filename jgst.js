@@ -1,170 +1,279 @@
 /**
- * jgst.js (Diperbarui sesuai Spesifikasi JGST Konsonan Murni)
- * Pemetaan Aksara Jawa ke Latin JGST.
+ * jgst.js
+ * Modul Transliterasi Aksara Jawa ke JGST (Javanese General System of Transliteration)
+ * Pembaruan Khusus:
+ * - Penanganan Visual Pangkon (꧀) untuk Tata Tulis Baru (kbj, sriwedari, simplified):
+ *   * Jika Pangkon membentuk Pasangan dengan aksara berikutnya (termasuk Pa Cerek ꦉ, Nga Lelet ꦊ, ꦋ),
+ *     JGST TIDAK memunculkan '/' atau '/,'.
+ *   * Simbol '/' atau '/,' / '/.' HANYA muncul jika secara visual pada Aksara Jawa
+ *     memang tampak karakter Pangkon (di akhir klausa/kalimat/tanda baca).
+ * - Ra Agung (ꦬ): 'ṟa'
+ * - Cakra (ꦿ): 'ŕa', Pengkal (ꦾ): 'ỿa', Cakra Keret (ꦽ): 'ŕě'
+ * - Penambahan Pemetaan Lengkap Codepoint Pada & Simbol Unicode (U+A980 - U+A9DF)
  */
 
-const jgstMap = {
-  // Candrabindu, Anusvara, Repha, Visarga
-  '\uA980': 'ṃ',    // Candrabindu
-  '\uA981': 'ŋ',    // Anusvara
-  '\uA982': 'ṙ',    // Repha
-  '\uA983': 'ḥ',    // Visarga
+function transliterateToJGST(aksaraStr, fnKey) {
+    if (!aksaraStr || aksaraStr === '-') return '-';
 
-  // Swara & Kombinasi Swara
-  '\uA984\uA9B4': 'ā', // Swara A + Tarung
-  '\uA984': 'a',       // Swara A
-  '\uA985': 'i',       // Swara I Kawi
-  '\uA986': 'i',       // Swara I
-  '\uA987': 'ī',       // Swara II
-  '\uA988\uA9B4': 'ū', // Swara U + Tarung
-  '\uA988': 'u',       // Swara U
-  '\uA989\uA9B4': 'ṛě',// Vocalic R + Tarung
-  '\uA989': 'ṛ',       // Vocalic R (Pa Cerek)
-  '\uA98A': 'ḷ',       // Vocalic L (Nga Lelet)
-  '\uA98B': 'ḷö',      // Vocalic LL
-  '\uA98C': 'é',       // Swara E
-  '\uA98D': 'ꜽ',      // Swara AI
-  '\uA98E\uA9B4': 'ꜷ', // Swara O + Tarung
-  '\uA98E': 'o',       // Swara O
+    // Abaikan simbol mentah pemicu Pendekatan A (~, !), B ([, ], *), dan C (#, ^)
+    aksaraStr = aksaraStr.replace(/[\~!\#\^\[\]\*]/g, '');
 
-  // Wyanjana & Murda (Konsonan Murni)
-  '\uA98F': 'k',       // Ka
-  '\uA990': 'q',       // Qa / Ka Murda
-  '\uA991': 'ḳ',       // Ka Sasak
-  '\uA992': 'g',       // Ga
-  '\uA993': 'g̣',       // Ga Murda Gha
-  '\uA994': 'ṅ',       // Nga
-  '\uA995': 'c',       // Ca
-  '\uA996': 'c̣',       // Ca Murda Cha
-  '\uA997': 'j',       // Ja
-  '\uA998': 'jñ',      // Ja Mahaprana / Nya Murda Jnya
-  '\uA999': 'j̣',       // Nya Murda
-  '\uA99A': 'ñ',       // Nya
-  '\uA99B': 'ṭ',       // Tta
-  '\uA99C': 'ṭh',      // Tta Mahaprana Ttha
-  '\uA99D': 'ḍ',       // Dda
-  '\uA99E': 'ḍh',      // Dda Mahaprana Ddha
-  '\uA99F': 'ṇ',       // Na Murda Nna
-  '\uA9A0': 't',       // Ta
-  '\uA9A1': 'th',      // Ta Murda Tha
-  '\uA9A2': 'd',       // Da
-  '\uA9A3': 'dh',      // Da Mahaprana Dha
-  '\uA9A4': 'n',       // Na
-  '\uA9A5': 'p',       // Pa
-  '\uA9A6': 'p̣',       // Pa Murda Pha
-  '\uA9A7': 'b',       // Ba
-  '\uA9A8': 'ḅ',       // Ba Murda Bha
-  '\uA9A9': 'm',       // Ma
-  '\uA9AA': 'y',       // Ya
-  '\uA9AB\uA9C0': 'r/',// Ra + Pangkon
-  '\uA9AB': 'r',       // Ra
-  '\uA9AC': 'ṟ',       // Ra Agung
-  '\uA9AD': 'l',       // La
-  '\uA9AE': 'w',       // Wa
-  '\uA9AF': 'ś',       // Sa Murda Sha
-  '\uA9B0': 'ṣ',       // Sa Mahaprana Ssa
-  '\uA9B1': 's',       // Sa
-  '\uA9B2': 'h',       // Ha
-  '\uA9B3': '',        // Cecak telu / Nukta
+    const isModern = ['kbj', 'sriwedari', 'simplified'].includes(fnKey);
 
-  // Sandhangan Swara & Kombinasi
-  '\uA9B4': 'ā',       // Tarung
-  '\uA9B5': 'o',       // Tolong varian glyph
-  '\uA9B6': 'i',       // Wulu
-  '\uA9B7': 'ī',       // Wulu Melik
-  '\uA9B8': 'u',       // Suku
-  '\uA9B9': 'ū',       // Suku Mendut
-  '\uA9BA\uA9B4': 'o',  // Taling + Tarung
-  '\uA9BA\uA9B5': 'õ',  // Taling + Tolong
-  '\uA9BA': 'é',       // Taling
-  '\uA9BB\uA9B4': 'ꜹ', // Dirga Mure + Tarung
-  '\uA9BB\uA9B5': 'ã', // Dirga Mure + Tolong
-  '\uA9BB': 'ꜽ',      // Dirga Mure
-  '\uA9BC\uA9B4': 'ö', // Pepet + Tarung
-  '\uA9BC': 'ě',       // Pepet
-  '\uA9BD': 'ŕě',      // Keret
-  '\uA9BE': 'ỿa',      // Pengkal
-  '\uA9BF': 'ŕ',       // Cakra
-  '\uA9C0': '/',       // Pangkon / Virama
+    // Map Aksara Jawa ke JGST
+    const wyanjanaMap = {
+        'ꦲ': 'ha', 'ꦤ': 'na', 'ꦕ': 'ca', 'ꦫ': 'ra', 'ꦏ': 'ka',
+        'ꦢ': 'da', 'ꦠ': 'ta', 'ꦱ': 'sa', 'ꦮ': 'wa', 'ꦭ': 'la',
+        'ꦥ': 'pa', 'ꦝ': 'ḍa', 'ꦗ': 'ja', 'ꦪ': 'ya', 'ꦚ': 'ña',
+        'ꦩ': 'ma', 'ꦒ': 'ga', 'ꦧ': 'ba', 'ꦛ': 'ṭa', 'ꦔ': 'ṅa',
+        // Aksara Murda / Mahaprana / Kawi
+        'ꦟ': 'ṇa', 'ꦑ': 'ḳa', 'ꦡ': 'tha', 'ꦯ': 'śa', 'ꦰ': 'ṣa', 'ꦦ': 'p̣a',
+        'ꦓ': 'g̣a', 'ꦨ': 'ḅa', 'ꦖ': 'c̣a', 'ꦘ': 'jña', 'ꦙ': 'j̣a',
+        'ꦞ': 'ḍha', 'ꦣ': 'dha', 'ꦜ': 'ṭha', 'ꦬ': 'ṟa', 'ꦐ': 'qa'
+    };
 
-  // Tanda Baca
-  '\uA9C8': ',',
-  '\uA9C9': '.',
+    const rekanMap = {
+        'ꦥ꦳': 'fa', 'ꦮ꦳': 'va', 'ꦗ꦳': 'za', 'ꦏ꦳': 'xa',
+        'ꦢ꦳': 'dza', 'ꦒ꦳': 'g̣a', 'ꦯ꦳': 'śa', 'ꦰ꦳': 'ṣa',
+        'ꦲ꦳': 'ḥa', 'ꦱ꦳': 'ṡa', 'ꦡ꦳': 'ṭa', 'ꦣ꦳': 'ẓa',
+        'ꦭ꦳': 'ḍa', 'ꦔ꦳': '‘a'
+    };
 
-  // Angka Jawa
-  '\uA9D0': '0', '\uA9D1': '1', '\uA9D2': '2', '\uA9D3': '3', '\uA9D4': '4',
-  '\uA9D5': '5', '\uA9D6': '6', '\uA9D7': '7', '\uA9D8': '8', '\uA9D9': '9'
-};
+    const swaraMap = {
+        'ꦄ': 'a', 'ꦅ': 'i', 'ꦆ': 'i', 'ꦇ': 'ī',
+        'ꦈ': 'u', 'ꦉ': 'ṛ', 'ꦊ': 'ḷ', 'ꦋ': 'ḹ',
+        'ꦌ': 'é', 'ꦍ': 'ꜽ', 'ꦎ': 'o'
+    };
 
-// Peta Rekan (Konsonan Murni)
-const rekanMap = {
-  '\uA9A5\uA9B3': 'f',
-  '\uA9AE\uA9B3': 'v',
-  '\uA997\uA9B3': 'z',
-  '\uA9A2\uA9B3': 'dz',
-  '\uA9B2\uA9B3': 'ḥ',
-  '\uA994\uA9B3': '‘',
-  '\uA9B1\uA9B3': 'ṡ',
-  '\uA9B0\uA9B3': 'ṣ',
-  '\uA9AF\uA9B3': 'ś',
-  '\uA9AD\uA9B3': 'ḍ',
-  '\uA9A1\uA9B3': 'ṭ',
-  '\uA9A3\uA9B3': 'ẓ',
-  '\uA98F\uA9B3': 'x',
-  '\uA990\uA9B3': 'x',
-  '\uA991\uA9B3': 'x'
-};
+    const sandhanganSwaraMap = {
+        'ꦶ': 'i', 'ꦷ': 'ī', 'ꦸ': 'u', 'ꦹ': 'ū',
+        'ꦺ': 'é', 'ꦻ': 'ꜽ', 'ꦼ': 'ě', 'ꦺꦴ': 'o', 'ꦻꦴ': 'ꜷ', 'ꦴ': 'ā',
+        'ꦵ': 'o'
+    };
 
-function transliterateToJGST(text) {
-  let result = "";
-  let i = 0;
-  while (i < text.length) {
-    let char2 = i + 1 < text.length ? text.substring(i, i + 2) : "";
-    
-    if (rekanMap[char2] !== undefined) {
-      result += rekanMap[char2];
-      i += 2;
-    } else if (jgstMap[char2] !== undefined) {
-      result += jgstMap[char2];
-      i += 2;
-    } else if (jgstMap[text[i]] !== undefined) {
-      result += jgstMap[text[i]];
-      i++;
-    } else {
-      result += text[i];
-      i++;
+    const panyigegMap = {
+        'ꦁ': 'ŋ', 'ꦂ': 'ṙ', 'ꦃ': 'ḥ', 'ꦀ': 'ṃ'
+    };
+
+    const angkaMap = {
+        '꧐': '0', '꧑': '1', '꧒': '2', '꧓': '3', '꧔': '4',
+        '꧕': '5', '꧖': '6', '꧗': '7', '꧘': '8', '꧙': '9'
+    };
+
+    // Pemetaan Tanda Baca / Pada Lengkap
+    const padaMap = {
+        '꧈': ',', '꧉': '.', '꧇': ':',
+        '꧁': '((', '꧂': '))',
+        '꧃': '<_', '꧄': '<>', '꧅': '>^', '꧆': '(o)',
+        '꧊': '|', '꧋': '||',
+        '꧌': '[\\', '꧍': '\\]',
+        '꧎': '^2', 'ꧏ': '_2',
+        '꧞': '~~', '꧟': '##'
+    };
+
+    let result = '';
+    let i = 0;
+    let len = aksaraStr.length;
+
+    while (i < len) {
+        let ch = aksaraStr[i];
+
+        // 1. Handling Aksara Rekan (Dua Karakter: Konsonan + Cecak Telu ꦳)
+        if (i + 1 < len && aksaraStr[i + 1] === '꦳') {
+            let pair = ch + '꦳';
+            if (rekanMap[pair]) {
+                let baseSyl = rekanMap[pair];
+                i += 2;
+
+                if (i < len && sandhanganSwaraMap[aksaraStr[i]]) {
+                    let v = sandhanganSwaraMap[aksaraStr[i]];
+                    baseSyl = baseSyl.slice(0, -1) + v;
+                    i++;
+                } else if (i + 1 < len && aksaraStr[i] === 'ꦺ' && aksaraStr[i + 1] === 'ꦴ') {
+                    baseSyl = baseSyl.slice(0, -1) + 'o';
+                    i += 2;
+                } else if (i + 1 < len && aksaraStr[i] === 'ꦻ' && aksaraStr[i + 1] === 'ꦴ') {
+                    baseSyl = baseSyl.slice(0, -1) + 'ꜷ';
+                    i += 2;
+                } else if (i < len && aksaraStr[i] === '꧀') {
+                    baseSyl = baseSyl.slice(0, -1);
+                    i++;
+
+                    let hasLingsaAfter = (i < len && aksaraStr[i] === '꧈');
+                    if (hasLingsaAfter) {
+                        i++;
+                    }
+
+                    let peekIdx = i;
+                    while (peekIdx < len && (aksaraStr[peekIdx] === '\uE000' || aksaraStr[peekIdx] === ' ')) {
+                        peekIdx++;
+                    }
+                    let nextRealChar = (peekIdx < len) ? aksaraStr[peekIdx] : '';
+                    let isPasanganNext = !hasLingsaAfter && !!(
+                        wyanjanaMap[nextRealChar] ||
+                        ['ꦉ', 'ꦊ', 'ꦋ'].includes(nextRealChar) ||
+                        (peekIdx + 1 < len && rekanMap[nextRealChar + aksaraStr[peekIdx + 1]])
+                    );
+
+                    if (isModern) {
+                        if (!isPasanganNext) {
+                            if (hasLingsaAfter) {
+                                baseSyl += '/.';
+                            } else {
+                                let isEnd = (!nextRealChar || nextRealChar === '꧉' || nextRealChar === '\n');
+                                baseSyl += isEnd ? '/' : '/,';
+                            }
+                        }
+                    } else {
+                        if (hasLingsaAfter) {
+                            baseSyl += '/,';
+                        } else {
+                            let nextCh = (i < len) ? aksaraStr[i] : '';
+                            let isWordBoundary = (!nextCh || nextCh === ' ' || nextCh === '\n' || nextCh === '\uE000' || nextCh === '꧈' || nextCh === '꧉');
+                            if (!isPasanganNext) {
+                                baseSyl += '/';
+                            }
+                        }
+                    }
+                }
+                result += baseSyl;
+                continue;
+            }
+        }
+
+        // Standalone Cecak Telu / Nukta (꦳)
+        if (ch === '꦳') {
+            result += '+3';
+            i++;
+            continue;
+        }
+
+        // 2. Handling Angka Jawa
+        if (angkaMap[ch]) {
+            result += angkaMap[ch];
+            i++;
+            continue;
+        }
+
+        // 3. Handling Tanda Baca (Pada)
+        if (padaMap[ch]) {
+            result += padaMap[ch];
+            i++;
+            continue;
+        }
+
+        // 4. Handling Aksara Swara Independent
+        if (swaraMap[ch]) {
+            result += swaraMap[ch];
+            i++;
+            continue;
+        }
+
+        // 5. Handling Aksara Wyanjana (Konsonan Utama)
+        if (wyanjanaMap[ch]) {
+            let baseSyl = wyanjanaMap[ch];
+            i++;
+
+            // Cek Sandhangan Wyanjana (Cakra ꦿ -> ŕa, Pengkal ꦾ -> ỿa, Cakra Keret ꦽ -> ŕě)
+            if (i < len && aksaraStr[i] === 'ꦿ') {
+                baseSyl = baseSyl.slice(0, -1) + 'ŕa';
+                i++;
+            } else if (i < len && aksaraStr[i] === 'ꦾ') {
+                baseSyl = baseSyl.slice(0, -1) + 'ỿa';
+                i++;
+            } else if (i < len && aksaraStr[i] === 'ꦽ') {
+                baseSyl = baseSyl.slice(0, -1) + 'ŕě';
+                i++;
+            }
+
+            // Cek Kombinasi Taling Tarung (ꦺꦴ) dan Taling Tarung Dirga (ꦻꦴ)
+            if (i + 1 < len && aksaraStr[i] === 'ꦺ' && aksaraStr[i + 1] === 'ꦴ') {
+                baseSyl = baseSyl.slice(0, -1) + 'o';
+                i += 2;
+            } else if (i + 1 < len && aksaraStr[i] === 'ꦻ' && aksaraStr[i + 1] === 'ꦴ') {
+                baseSyl = baseSyl.slice(0, -1) + 'ꜷ';
+                i += 2;
+            } else if (i < len && sandhanganSwaraMap[aksaraStr[i]]) {
+                let v = sandhanganSwaraMap[aksaraStr[i]];
+                baseSyl = baseSyl.slice(0, -1) + v;
+                i++;
+            } else if (i < len && aksaraStr[i] === '꧀') {
+                // Pangkon ꧀
+                baseSyl = baseSyl.slice(0, -1);
+                i++;
+
+                let hasLingsaAfter = (i < len && aksaraStr[i] === '꧈');
+                if (hasLingsaAfter) {
+                    i++;
+                }
+
+                // Cek apakah Pangkon ini membentuk Pasangan dengan aksara berikutnya
+                let peekIdx = i;
+                while (peekIdx < len && (aksaraStr[peekIdx] === '\uE000' || aksaraStr[peekIdx] === ' ')) {
+                    peekIdx++;
+                }
+                let nextRealChar = (peekIdx < len) ? aksaraStr[peekIdx] : '';
+                let isPasanganNext = !hasLingsaAfter && !!(
+                    wyanjanaMap[nextRealChar] ||
+                    ['ꦉ', 'ꦊ', 'ꦋ'].includes(nextRealChar) ||
+                    (peekIdx + 1 < len && rekanMap[nextRealChar + aksaraStr[peekIdx + 1]])
+                );
+
+                if (isModern) {
+                    if (!isPasanganNext) {
+                        // Hanya munculkan / atau /, jika secara VISUAL aksara Jawa menampilkan Pangkon
+                        if (hasLingsaAfter) {
+                            baseSyl += '/.';
+                        } else {
+                            let isEnd = (!nextRealChar || nextRealChar === '꧉' || nextRealChar === '\n');
+                            baseSyl += isEnd ? '/' : '/,';
+                        }
+                    }
+                } else {
+                    // Tata Tulis Lama (Tradisional & Cara Kawi) - pertahankan perilaku asli
+                    if (hasLingsaAfter) {
+                        baseSyl += '/,';
+                    } else {
+                        let nextCh = (i < len) ? aksaraStr[i] : '';
+                        let isWordBoundary = (!nextCh || nextCh === ' ' || nextCh === '\n' || nextCh === '\uE000' || nextCh === '꧈' || nextCh === '꧉');
+                        if (!isPasanganNext) {
+                            baseSyl += '/';
+                        }
+                    }
+                }
+            }
+
+            // Cek Panyigeg (Cecak ꦁ, Layar ꦂ, Wignyan ꦃ, Panyangga ꦀ)
+            if (i < len && panyigegMap[aksaraStr[i]]) {
+                baseSyl += panyigegMap[aksaraStr[i]];
+                i++;
+            }
+
+            result += baseSyl;
+            continue;
+        }
+
+        // 6. Handling Panyigeg Mandiri / Lainnya
+        if (panyigegMap[ch]) {
+            result += panyigegMap[ch];
+            i++;
+            continue;
+        }
+
+        // 7. Karakter Passthrough (Spasi, Marker \uE000, Tanda Baca Latin)
+        if (/[\~!\#\^\[\]\*]/.test(ch)) {
+            i++;
+            continue;
+        }
+
+        result += ch;
+        i++;
     }
-  }
-  return result;
+
+    result = result.replace(/\/+/g, '/');
+    return result;
 }
 
-function appendJGST(text) {
-  let result = "";
-  let i = 0;
-  while (i < text.length) {
-    let char2 = i + 1 < text.length ? text.substring(i, i + 2) : "";
-    if (rekanMap[char2] !== undefined) {
-      result += char2 + "[" + rekanMap[char2] + "]";
-      i += 2;
-    } else if (jgstMap[char2] !== undefined) {
-      result += char2 + "[" + jgstMap[char2] + "]";
-      i += 2;
-    } else if (jgstMap[text[i]] !== undefined) {
-      result += text[i] + "[" + jgstMap[text[i]] + "]";
-      i++;
-    } else {
-      result += text[i]; 
-      i++;
-    }
-  }
-  return result;
-}
-
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = { jgstMap, rekanMap, appendJGST, transliterateToJGST };
-} else {
-  window.jgstMap = jgstMap;
-  window.rekanMap = rekanMap;
-  window.appendJGST = appendJGST;
-  window.transliterateToJGST = transliterateToJGST;
+if (typeof window !== 'undefined') {
+    window.transliterateToJGST = transliterateToJGST;
 }
